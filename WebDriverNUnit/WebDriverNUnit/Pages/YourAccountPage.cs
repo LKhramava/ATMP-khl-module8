@@ -36,6 +36,8 @@ namespace WebDriverNUnit.Pages
 
 		private readonly BaseElement sentBE = new BaseElement(By.XPath("//div[@id='sideBarContent']//a[contains(@href,'sent')]"));
 
+		private readonly BaseElement trashBE = new BaseElement(By.XPath("//div[@id='sideBarContent']//a[contains(@href,'trash')]"));
+
 		private readonly BaseElement composeAppPopupBE = new BaseElement(By.XPath("//div[contains(@class, 'compose-app_popup')]"));
 		private readonly BaseElement composeAppPopupSendBE = new BaseElement(By.XPath("//div[contains(@class, 'compose-app_popup')]//button[@data-test-id='send']"));
 		private readonly BaseElement sentMessageCloseBE = new BaseElement(By.CssSelector(".layer__controls"));
@@ -43,18 +45,26 @@ namespace WebDriverNUnit.Pages
 		private readonly BaseElement accoutContainerBE = new BaseElement(By.XPath("//div[contains(@class, 'ph-project__account')]"));
 		private readonly BaseElement exitBE = new BaseElement(By.XPath("//div[contains(@class, 'ph-accounts')]//div[contains(@class, 'ph-item')]//div[contains(@class, 'ph-icon')]"));
 
+		private readonly BaseElement draftsItemsBE = new BaseElement(By.XPath("//a[contains(@class, 'js-letter-list-item') and contains(@href, 'drafts')]"));
+		private readonly BaseElement sentItemsBE = new BaseElement(By.XPath("//a[contains(@class, 'js-letter-list-item') and contains(@href, 'sent')]"));
+		private readonly BaseElement trashItemsBE = new BaseElement(By.XPath("//a[contains(@class, 'js-letter-list-item') and contains(@href, 'trash')]"));
+		private readonly BaseElement firstDraftItemBE = new BaseElement(By.XPath("(//a[contains(@class, 'js-letter-list-item') and contains(@href, 'drafts')])[1]"));
+		private readonly BaseElement firstDraftItemBackgroundBE = new BaseElement(By.XPath("(//a[contains(@class, 'js-letter-list-item') and contains(@href, 'drafts')])[1]//div[contains(@class, 'llc__background')]"));
+
 		public bool SaveDraftEmail(string letterEmail, string letterSubject, string letterBody)
 		{
 			SaveDraftEmailInternal(letterEmail, letterSubject, letterBody);
 
 			//	Verify, that the mail presents in ‘Drafts’ folder
 			//	Verify the draft content (addressee, subject and body – should be the same as in 3).
-			sideBarContentBE.Click();
-			
-			//var draftSubjectByStr = "//span[contains(@class, 'll-sj__normal') and contains(text(), '" + letterSubject + "')]";
-			//var draftSubjectBy = By.XPath(draftSubjectByStr);
-			//IsElementVisible(draftSubjectBy);
-			Thread.Sleep(1000);
+
+			//click on Draft folder and make sure that we have moved to the page with the draft elements
+			draftBE.Click();
+			draftBE.UrlContainsFraction("drafts");
+			draftsItemsBE.WaitForIsVisible();
+
+			BaseElement draftSubjectBE = new BaseElement(By.XPath("//span[contains(@class, 'll-sj__normal') and text()='" + letterSubject + "']"));
+			draftSubjectBE.WaitForIsVisible();
 
 			var letterInDraft = FindLetterInList(lettersBy, letterEmail, letterSubject, letterBody);
 			return letterInDraft != null;
@@ -64,6 +74,39 @@ namespace WebDriverNUnit.Pages
 		{
 			return SendDraftEmailInternal(letterEmail, letterSubject, letterBody);
 		}
+
+		public bool DelteFirstDraftEmail()
+		{
+			//use JS Executor
+
+			//click on Draft folder and make sure that we have moved to the page with the draft elements
+			draftBE.JSClick();
+			draftBE.UrlContainsFraction("drafts");
+			draftsItemsBE.WaitForIsVisible();
+
+			//find first letter in the list
+			var firstDraftWebElement = firstDraftItemBE.GetElement();
+			var email = firstDraftWebElement.FindElement(letterCorrespondentBy).GetAttribute("title");
+			var subject = firstDraftWebElement.FindElement(letterSubjectBy).Text;
+			var data = firstDraftWebElement.FindElement(letterSnippetBy).Text;
+
+			//hightligh first letter
+			firstDraftItemBackgroundBE.JSHighligh();
+			firstDraftItemBE.MoveToElement();
+
+			//move the first letter to the deleted folder(trash)
+			firstDraftItemBE.DragAndDropWithActions(trashBE.GetElement());
+
+			//click on Trash folder and make sure that we have moved to the page with the trash elements
+			trashBE.Click();
+			trashBE.UrlContainsFraction("trash");
+			trashItemsBE.WaitForIsVisible();
+
+			//find letter in trash folder
+			var letterInDraft = FindLetterInList(lettersBy, email, subject, data);
+			return letterInDraft != null;
+		}
+
 		public void Logout()
 		{
 			accoutContainerBE.Click();
@@ -91,7 +134,8 @@ namespace WebDriverNUnit.Pages
 			//	Verify, that the mail presents in ‘Drafts’ folder
 			//	Verify the draft content (addressee, subject and body – should be the same as in 3).
 			draftBE.Click();
-			Thread.Sleep(1000);
+			draftBE.UrlContainsFraction("drafts");
+			draftsItemsBE.WaitForIsVisible();
 
 			var letterInDraft = FindLetterInList(lettersBy, letterEmail, letterSubject, letterBody);
 			if (letterInDraft != null)
@@ -116,7 +160,8 @@ namespace WebDriverNUnit.Pages
 			sideBarContentBE.Click();
 			draftBE.Click();
 
-			Thread.Sleep(1000);
+			draftBE.UrlContainsFraction("drafts");
+			draftsItemsBE.WaitForIsVisible();
 			var notExistLetterInDraft = FindLetterInList(lettersBy, letterEmail, letterSubject, letterBody);
 			return notExistLetterInDraft;
 		}
@@ -127,7 +172,8 @@ namespace WebDriverNUnit.Pages
 			sideBarContentBE.Click();
 			sentBE.Click();
 
-			Thread.Sleep(100);
+			draftBE.UrlContainsFraction("sent");
+			sentItemsBE.WaitForIsVisible();
 			var letterInSent = FindLetterInList(lettersBy, letterEmail, letterSubject, letterBody);
 			return letterInSent;
 		}

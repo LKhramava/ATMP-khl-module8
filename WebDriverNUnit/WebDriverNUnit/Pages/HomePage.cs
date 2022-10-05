@@ -31,6 +31,11 @@ namespace WebDriverNUnit.Pages
 			return Login(login, password);
 		}
 
+		public YourAccountPage GoToYourAccountPageWithActions(string login, string password)
+		{
+			return LoginWithActions(login, password);
+		}
+
 		public void AssertIsVisible(By locator)
 		{
 			var label = new BaseElement(locator);
@@ -49,6 +54,30 @@ namespace WebDriverNUnit.Pages
 			inputLoginSubmitBE.Click();
 
 			dataClickCounterBE.Click();
+
+			Browser.GetDriver().SwitchTo().DefaultContent();
+
+			return new YourAccountPage();
+		}
+
+		private YourAccountPage LoginWithActions(string login, string password)
+		{
+			//login with actions (use click and keydown)
+
+			//click to login button
+			loginBE.ClickWithActions();
+
+			Browser.GetDriver().SwitchTo().Frame(this.loginFrameBE.GetElement());
+
+			//input login
+			userNameBE.SendKeysWithActions(login);
+			inputLoginSubmitBE.PressEnter();
+
+			//input password
+			inputPasswordBE.SendKeysWithActions(password);
+			inputLoginSubmitBE.PressEnter();
+
+			dataClickCounterBE.ClickWithActions();
 
 			Browser.GetDriver().SwitchTo().DefaultContent();
 

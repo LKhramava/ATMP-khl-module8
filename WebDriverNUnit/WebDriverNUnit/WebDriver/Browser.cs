@@ -26,7 +26,16 @@ namespace WebDriverNUnit.WebDriver
 			Enum.TryParse(_browser, out currentBrowser);
 		}
 
-		public static Browser Instance = _currentInstance ?? (_currentInstance = new Browser());
+		public static Browser Instance
+		{
+			get
+			{
+				if (_currentInstance == null) 
+					_currentInstance = new Browser();
+				
+				return _currentInstance;
+			}
+		}
 
 		public static void WindowMaximise()
 		{

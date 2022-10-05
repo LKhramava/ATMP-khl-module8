@@ -1,4 +1,5 @@
 ﻿using OpenQA.Selenium;
+using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
 using SeleniumExtras.WaitHelpers;
 using System;
@@ -48,6 +49,11 @@ namespace WebDriverNUnit.WebDriver
 			new WebDriverWait(Browser.GetDriver(), TimeSpan.FromSeconds(Browser.TimeoutForElement)).Until(ExpectedConditions.ElementIsVisible(this.Locator));
 		}
 
+		public void UrlContainsFraction(string fraction)
+		{
+			new WebDriverWait(Browser.GetDriver(), TimeSpan.FromSeconds(Browser.TimeoutForElement)).Until(ExpectedConditions.UrlContains(fraction));
+		}
+
 		public string TagName { get; }
 		public string Text { get; }
 		public bool Enabled { get; }
@@ -67,12 +73,71 @@ namespace WebDriverNUnit.WebDriver
 			Browser.GetDriver().FindElement(this.Locator).Click();
 		}
 
+		public void ClickWithActions()
+		{
+			this.WaitForIsVisible();
+			var locator = Browser.GetDriver().FindElement(this.Locator);
+			new Actions(Browser.GetDriver()).Click(locator).Build().Perform();
+		}
+
+		public void PressEnter()
+		{
+			this.WaitForIsVisible();
+			new Actions(Browser.GetDriver()).KeyDown(Keys.Enter).Build().Perform();
+		}
+
+		public void SendKeysWithActions(string keysToSend)
+		{
+			this.WaitForIsVisible();
+			var locator = Browser.GetDriver().FindElement(this.Locator);
+			new Actions(Browser.GetDriver()).SendKeys(locator, keysToSend).Build().Perform();
+		}
+
+		public void DragAndDropWithActions(IWebElement element)
+		{
+			this.WaitForIsVisible();
+			var locator = Browser.GetDriver().FindElement(this.Locator);
+
+			//doesn't work!!!
+			//new Actions(Browser.GetDriver()).DragAndDrop(locator, element).Build().Perform();
+
+			var a = locator;
+			var b = element;
+
+			int x = locator.Location.X;
+			int y = locator.Location.Y;
+
+			Actions actions = new Actions(Browser.GetDriver());
+			actions.MoveToElement(a)
+					.Pause(new TimeSpan(0, 0, 0, 1))
+					.ClickAndHold(a)
+					.Pause(new TimeSpan(0, 0, 0, 1))
+					.MoveByOffset(x, y)
+					.MoveToElement(b)
+					.MoveByOffset(-10, -10)
+					.Pause(new TimeSpan(0, 0, 0, 1))
+					.Release().Build().Perform();
+		}
+
+		public void MoveToElement()
+		{
+			var locator = Browser.GetDriver().FindElement(this.Locator);
+			new Actions(Browser.GetDriver()).MoveToElement(locator).Build().Perform();
+		}
+
 		public void JSClick()
 		{
 			this.WaitForIsVisible();
 			IJavaScriptExecutor executor = (IJavaScriptExecutor)Browser.GetDriver();
 			executor.ExecuteScript("arguments[0].click();", this.GetElement());
 
+		}
+
+		public void JSHighligh()
+		{
+			this.WaitForIsVisible();
+			IJavaScriptExecutor executor = (IJavaScriptExecutor)Browser.GetDriver();
+			executor.ExecuteScript("arguments[0].style.cssText += 'background-color:yellow !important;'", this.GetElement());
 		}
 
 		public By GetLocator()

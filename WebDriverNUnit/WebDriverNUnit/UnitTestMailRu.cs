@@ -16,6 +16,26 @@ namespace WebDriverNUnit
 		}
 
 		[Test]
+		[TestCase("lizakhramova", "070461040485")]
+		public void TestLoginWithActions(string login, string password)
+		{
+			var homePage = new HomePage();
+			homePage.GoToYourAccountPageWithActions(login, password);
+		}
+
+		[Test]
+		[TestCase("lizakhramova", "070461040485")]
+		public void DeleteFirstDraftEmailWithActions(string login, string password)
+		{
+			var homePage = new HomePage();
+			var accountPage = homePage.GoToYourAccountPageWithActions(login, password);
+
+			var deleteFirstDraftEmailResult = accountPage.DelteFirstDraftEmail();
+			Assert.IsTrue(deleteFirstDraftEmailResult);
+
+		}
+
+		[Test]
 		[TestCase("lizakhramova", "070461040485", "lizakhramova@mail.ru", "TestAT", "Hello! My name is Liza! How are you? See you later. Bye.")]
 		public void SaveDraftEmail(string login, string password, string letterEmail, string letterSubject, string letterBody)
 		{
