@@ -45,11 +45,14 @@ namespace WebDriverNUnit.Pages
 		private readonly BaseElement accoutContainerBE = new BaseElement(By.XPath("//div[contains(@class, 'ph-project__account')]"));
 		private readonly BaseElement exitBE = new BaseElement(By.XPath("//div[contains(@class, 'ph-accounts')]//div[contains(@class, 'ph-item')]//div[contains(@class, 'ph-icon')]"));
 
-		private readonly BaseElement draftsItemsBE = new BaseElement(By.XPath("//a[contains(@class, 'js-letter-list-item') and contains(@href, 'drafts')]"));
-		private readonly BaseElement sentItemsBE = new BaseElement(By.XPath("//a[contains(@class, 'js-letter-list-item') and contains(@href, 'sent')]"));
-		private readonly BaseElement trashItemsBE = new BaseElement(By.XPath("//a[contains(@class, 'js-letter-list-item') and contains(@href, 'trash')]"));
-		private readonly BaseElement firstDraftItemBE = new BaseElement(By.XPath("(//a[contains(@class, 'js-letter-list-item') and contains(@href, 'drafts')])[1]"));
-		private readonly BaseElement firstDraftItemBackgroundBE = new BaseElement(By.XPath("(//a[contains(@class, 'js-letter-list-item') and contains(@href, 'drafts')])[1]//div[contains(@class, 'llc__background')]"));
+		private static string jsLetterListItemString = "//a[contains(@class, 'js-letter-list-item') and contains(@href, '{0}')]";
+		private readonly BaseElement draftsItemsBE = new BaseElement(By.XPath(string.Format(jsLetterListItemString, "drafts")));
+		private readonly BaseElement sentItemsBE = new BaseElement(By.XPath(string.Format(jsLetterListItemString, "sent")));
+		private readonly BaseElement trashItemsBE = new BaseElement(By.XPath(string.Format(jsLetterListItemString, "trash")));
+
+		private static string jsLetterListItemDraftString = string.Format(jsLetterListItemString, "drafts");
+		private readonly BaseElement firstDraftItemBE = new BaseElement(By.XPath("(" + jsLetterListItemDraftString + ")[1]"));
+		private readonly BaseElement firstDraftItemBackgroundBE = new BaseElement(By.XPath("(" + jsLetterListItemDraftString + ")[1]//div[contains(@class, 'llc__background')]"));
 
 		public bool SaveDraftEmail(string letterEmail, string letterSubject, string letterBody)
 		{
@@ -90,8 +93,8 @@ namespace WebDriverNUnit.Pages
 			var subject = firstDraftWebElement.FindElement(letterSubjectBy).Text;
 			var data = firstDraftWebElement.FindElement(letterSnippetBy).Text;
 
-			//hightligh first letter
-			firstDraftItemBackgroundBE.JSHighligh();
+			//hightlight first letter
+			firstDraftItemBackgroundBE.JSHighlight();
 			firstDraftItemBE.MoveToElement();
 
 			//move the first letter to the deleted folder(trash)
@@ -188,7 +191,7 @@ namespace WebDriverNUnit.Pages
 				var subject = letter.FindElement(letterSubjectBy).Text;
 				var data = letter.FindElement(letterSnippetBy).Text;
 
-				if (string.Equals(email, letterEmail, StringComparison.OrdinalIgnoreCase) &&
+				if (email.Contains(letterEmail, StringComparison.OrdinalIgnoreCase) &&
 					subject.Contains(letterSubject, StringComparison.OrdinalIgnoreCase) &&
 					data.Contains(letterBody, StringComparison.OrdinalIgnoreCase))
 				{

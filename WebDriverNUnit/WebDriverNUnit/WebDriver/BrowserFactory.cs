@@ -18,9 +18,10 @@ namespace WebDriverNUnit.WebDriver
 
 		public static IWebDriver GetDriver(BrowserType type, int timeOutSec)
 		{
-			IWebDriver driver = null;
+			IWebDriver? driver;
 			switch (type)
 			{
+				default:
 				case BrowserType.Chrome:
 					{
 						var service = ChromeDriverService.CreateDefaultService();

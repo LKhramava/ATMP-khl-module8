@@ -93,30 +93,18 @@ namespace WebDriverNUnit.WebDriver
 			new Actions(Browser.GetDriver()).SendKeys(locator, keysToSend).Build().Perform();
 		}
 
-		public void DragAndDropWithActions(IWebElement element)
+		public void DragAndDropWithActions(IWebElement element, int targetElementOffsetX = -10, int targetElementOffsetY = -10)
 		{
 			this.WaitForIsVisible();
-			var locator = Browser.GetDriver().FindElement(this.Locator);
+			var locator = Browser.GetDriver().FindElement(this.Locator).FindElement(By.ClassName("llc__container"));
 
 			//doesn't work!!!
-			//new Actions(Browser.GetDriver()).DragAndDrop(locator, element).Build().Perform();
+			//new Actions(Browser.GetDriver()).DragAndDrop(locator, element.FindElement(By.XPath("//div[contains(@class, 'nav__folder-name nav__folder-name_shared')]"))).Build().Perform();
 
-			var a = locator;
-			var b = element;
+			var draggableElement = locator;
+			var targetElement = element;
 
-			int x = locator.Location.X;
-			int y = locator.Location.Y;
-
-			Actions actions = new Actions(Browser.GetDriver());
-			actions.MoveToElement(a)
-					.Pause(new TimeSpan(0, 0, 0, 1))
-					.ClickAndHold(a)
-					.Pause(new TimeSpan(0, 0, 0, 1))
-					.MoveByOffset(x, y)
-					.MoveToElement(b)
-					.MoveByOffset(-10, -10)
-					.Pause(new TimeSpan(0, 0, 0, 1))
-					.Release().Build().Perform();
+			new Actions(Browser.GetDriver()).DragAndDropElement(draggableElement, targetElement);
 		}
 
 		public void MoveToElement()
@@ -133,7 +121,7 @@ namespace WebDriverNUnit.WebDriver
 
 		}
 
-		public void JSHighligh()
+		public void JSHighlight()
 		{
 			this.WaitForIsVisible();
 			IJavaScriptExecutor executor = (IJavaScriptExecutor)Browser.GetDriver();
@@ -234,5 +222,24 @@ namespace WebDriverNUnit.WebDriver
 			}
 		}
 
+	}
+
+	public static class ActionExtensions
+	{
+		public static void DragAndDropElement(this Actions actions, IWebElement draggableElement, IWebElement targetElement, int offsetX = -10, int offsetY = -10)
+		{
+			int draggableElementX = draggableElement.Location.X;
+			int draggableElementY = draggableElement.Location.Y;
+
+			actions.MoveToElement(draggableElement)
+					.Pause(TimeSpan.FromSeconds(1))
+					.ClickAndHold(draggableElement)
+					.Pause(new TimeSpan(0, 0, 0, 1))
+					.MoveByOffset(draggableElementX, draggableElementY)
+					.MoveToElement(targetElement)
+					.MoveByOffset(offsetX, offsetY)
+					.Pause(new TimeSpan(0, 0, 0, 1))
+					.Release().Build().Perform();
+		}
 	}
 }
